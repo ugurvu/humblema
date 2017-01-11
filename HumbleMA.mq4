@@ -24,7 +24,7 @@
 //--- indicator parameters
 
 input int            InpPricePeriod = 1440;        // Price Period
-input int            PriceMode = 1;               // 0: Close, 1: High, 2: Low, 3: Typical, 4: Median
+input int            PriceMode = 3;               // 0: Close, 1: High, 2: Low, 3: Typical, 4: Median
 input int            MAType = 1;                  // 0: SMA, 1: EMA, 2: Smoothed, 3: LWMA
 
 //--- indicator buffers
