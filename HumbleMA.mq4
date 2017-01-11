@@ -7,25 +7,19 @@
 #property link        "http://www.humbleai.com"
 #property description "Humble MA"
 
-#property strict
-
 #property indicator_chart_window
 
 #property indicator_buffers 1
 
 #property indicator_color1 DeepPink
-//#property indicator_color2 DodgerBlue
-//#property indicator_color3 DodgerBlue
 
 #property indicator_width1 2
-//#property indicator_width2 1
-//#property indicator_width3 1
 
 //--- indicator parameters
 
 input int            InpPricePeriod = 1440;        // Price Period
-input int            PriceMode = 3;               // 0: Close, 1: High, 2: Low, 3: Typical, 4: Median
-input int            MAType = 1;                  // 0: SMA, 1: EMA, 2: Smoothed, 3: LWMA
+input int            PriceMode = 3;                // 0: Close, 1: High, 2: Low, 3: Typical, 4: Median
+input int            MAType = 1;                   // 0: SMA, 1: EMA, 2: Smoothed, 3: LWMA
 
 //--- indicator buffers
 double PriceExtLineBuffer[];
@@ -34,9 +28,6 @@ double PriceLExtLineBuffer[];
 double ExtLineBuffer[];
 double MAPeriodBuffer[];
 
-//+------------------------------------------------------------------+
-//| Custom indicator initialization function                         |
-//+------------------------------------------------------------------+
 int OnInit(void)
   {
 
@@ -64,7 +55,8 @@ void start()
    int i, Counted_bars; 
 //--------------------------------------------------------------------
    Counted_bars = IndicatorCounted(); // Number of counted bars
-   i=Bars-Counted_bars-1;           // Index of the first uncounted
+   i=Bars-Counted_bars-1;             // Index of the first uncounted
+   int HighIndex, LowIndex;           // Prev HL positions
    
    switch(PriceMode) 
      {   
@@ -78,8 +70,12 @@ void start()
 
    while(i>=0)                      // Loop for uncounted bars
      {
-      double highestp = High[iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i)];
-      double lowestp = Low[iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i)];
+      HighIndex = iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i);
+      LowIndex = iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i);
+      
+      double highestp = High[HighIndex];
+      double lowestp = Low[LowIndex];
+      
       double currentp;
 
       switch(PriceMode) 
@@ -98,7 +94,7 @@ void start()
       PriceHExtLineBuffer[i] = highestp;
       PriceLExtLineBuffer[i] = lowestp;
       
-      if (iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i) < iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i))
+      if (HighIndex < LowIndex) 
          MAPeriodBuffer[i]= iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i)-i;
       else
          MAPeriodBuffer[i]=iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i)-i;
