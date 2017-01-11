@@ -11,15 +11,15 @@
 
 #property indicator_chart_window
 
-#property indicator_buffers 3
+#property indicator_buffers 1
 
 #property indicator_color1 DeepPink
-#property indicator_color2 DodgerBlue
-#property indicator_color3 DodgerBlue
+//#property indicator_color2 DodgerBlue
+//#property indicator_color3 DodgerBlue
 
 #property indicator_width1 2
-#property indicator_width2 1
-#property indicator_width3 1
+//#property indicator_width2 1
+//#property indicator_width3 1
 
 //--- indicator parameters
 
@@ -32,6 +32,7 @@ double PriceExtLineBuffer[];
 double PriceHExtLineBuffer[];
 double PriceLExtLineBuffer[];
 double ExtLineBuffer[];
+double MAPeriodBuffer[];
 
 //+------------------------------------------------------------------+
 //| Custom indicator initialization function                         |
@@ -41,18 +42,18 @@ int OnInit(void)
 
    IndicatorShortName("Humble MA");
    
-   IndicatorBuffers(4);
+   IndicatorBuffers(5);
    
    SetIndexStyle(0, DRAW_LINE);
    SetIndexBuffer(0, ExtLineBuffer);
-   
-   SetIndexStyle(1, DRAW_LINE);
+
    SetIndexBuffer(1, PriceHExtLineBuffer);
-   
-   SetIndexStyle(2, DRAW_LINE);
+
    SetIndexBuffer(2, PriceLExtLineBuffer); 
      
    SetIndexBuffer(3, PriceExtLineBuffer);
+   
+   SetIndexBuffer(4, MAPeriodBuffer);
 
    return(INIT_SUCCEEDED);
   }
@@ -96,17 +97,17 @@ void start()
       
       PriceHExtLineBuffer[i] = highestp;
       PriceLExtLineBuffer[i] = lowestp;
+      
+      if (iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i) < iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i))
+         MAPeriodBuffer[i]= iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i)-i;
+      else
+         MAPeriodBuffer[i]=iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i)-i;
+     
       i--;
      }
    
    
-   for(i = 0; i <= Bars - Counted_bars - 1; i++) {
-     int maperiod;
-     if (iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i) < iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i)) maperiod= iLowest(NULL, 0, MODE_LOW, InpPricePeriod, i)-i;
-     else maperiod=iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i)-i;
-     
-     ExtLineBuffer[i]=(iMAOnArray(PriceExtLineBuffer, 0, maperiod, 0, MAType, i)*(PriceHExtLineBuffer[i] - PriceLExtLineBuffer[i])/100)+PriceLExtLineBuffer[i];
-   }
+   for(i = 0; i <= Bars - Counted_bars - 1; i++) ExtLineBuffer[i]=(iMAOnArray(PriceExtLineBuffer, 0, MathRound(MAPeriodBuffer[i]), 0, MAType, i)*(PriceHExtLineBuffer[i] - PriceLExtLineBuffer[i])/100)+PriceLExtLineBuffer[i];
     
    return;
   }
