@@ -9,11 +9,13 @@
 
 #property indicator_chart_window
 
-#property indicator_buffers 1
+#property indicator_buffers 2
 
 #property indicator_color1 DeepPink
+#property indicator_color2 DeepPink
 
 #property indicator_width1 2
+#property indicator_width2 1
 
 //--- indicator parameters
 
@@ -27,24 +29,28 @@ double PriceHExtLineBuffer[];
 double PriceLExtLineBuffer[];
 double ExtLineBuffer[];
 double MAPeriodBuffer[];
-
+double ChikouBuffer[];
 int OnInit(void)
   {
 
    IndicatorShortName("Humble MA");
    
-   IndicatorBuffers(5);
+   IndicatorBuffers(6);
    
    SetIndexStyle(0, DRAW_LINE);
    SetIndexBuffer(0, ExtLineBuffer);
+   
+   SetIndexStyle(1, DRAW_LINE);
+   SetIndexBuffer(1, ChikouBuffer);
+   SetIndexShift(1,-InpPricePeriod);
+   
+   SetIndexBuffer(2, PriceHExtLineBuffer);
 
-   SetIndexBuffer(1, PriceHExtLineBuffer);
-
-   SetIndexBuffer(2, PriceLExtLineBuffer); 
-     
-   SetIndexBuffer(3, PriceExtLineBuffer);
+   SetIndexBuffer(3, PriceLExtLineBuffer);  
    
    SetIndexBuffer(4, MAPeriodBuffer);
+   
+   SetIndexBuffer(5, PriceExtLineBuffer);
 
    return(INIT_SUCCEEDED);
   }
@@ -57,7 +63,7 @@ void start()
    Counted_bars = IndicatorCounted(); // Number of counted bars
    i=Bars-Counted_bars-1;             // Index of the first uncounted
    int HighIndex, LowIndex;           // Prev HL positions
-   
+  /* 
    switch(PriceMode) 
      {   
       case 0 : PriceExtLineBuffer[0] = Close[0];      break;
@@ -67,7 +73,7 @@ void start()
       case 4 : PriceExtLineBuffer[0] = (High[0] + Low[0]) / 2;   break;
       default: PriceExtLineBuffer[0] = Close[0]; 
      }      
-
+*/
    while(i>=0)                      // Loop for uncounted bars
      {
       HighIndex = iHighest(NULL, 0, MODE_HIGH, InpPricePeriod, i);
@@ -75,21 +81,18 @@ void start()
       
       double highestp = High[HighIndex];
       double lowestp = Low[LowIndex];
-      
-      double currentp;
 
       switch(PriceMode) 
         {   
-         case 0 : currentp = Close[i];      break;
-         case 1 : currentp = High[i];    break;
-         case 2 : currentp = Low[i];  break;
-         case 3 : currentp = (High[i] + Low[i] + Close[i]) / 3;   break;
-         case 4 : currentp = (High[i] + Low[i]) / 2;   break;
-         default: currentp = Close[i]; 
+         case 0 : ChikouBuffer[i] = Close[i];      break;
+         case 1 : ChikouBuffer[i] = High[i];    break;
+         case 2 : ChikouBuffer[i] = Low[i];  break;
+         case 3 : ChikouBuffer[i] = (High[i] + Low[i] + Close[i]) / 3;   break;
+         case 4 : ChikouBuffer[i] = (High[i] + Low[i]) / 2;   break;
+         default: ChikouBuffer[i] = Close[i]; 
         }      
       
-      
-      PriceExtLineBuffer[i] = MathAbs(currentp - lowestp) * 100 / (MathAbs(highestp - currentp) + MathAbs(currentp - lowestp));
+      PriceExtLineBuffer[i] = MathAbs(ChikouBuffer[i] - lowestp) * 100 / (MathAbs(highestp - ChikouBuffer[i]) + MathAbs(ChikouBuffer[i] - lowestp));
       
       PriceHExtLineBuffer[i] = highestp;
       PriceLExtLineBuffer[i] = lowestp;
