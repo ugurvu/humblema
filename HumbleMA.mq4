@@ -22,6 +22,7 @@
 input int            InpPricePeriod = 1440;        // Price Period
 input int            PriceMode = 3;                // 0: Close, 1: High, 2: Low, 3: Typical, 4: Median
 input int            MAType = 1;                   // 0: SMA, 1: EMA, 2: Smoothed, 3: LWMA
+input int            CutShort = 2;                 // Do not calculate more than period * CutShort bars. 0: calculate all
 
 //--- indicator buffers
 double PriceExtLineBuffer[];
@@ -106,7 +107,10 @@ void start()
      }
    
    
-   for(i = 0; i <= Bars - Counted_bars - 1; i++) ExtLineBuffer[i]=(iMAOnArray(PriceExtLineBuffer, 0, MathRound(MAPeriodBuffer[i]), 0, MAType, i)*(PriceHExtLineBuffer[i] - PriceLExtLineBuffer[i])/100)+PriceLExtLineBuffer[i];
+   for(i = 0; i <= Bars - Counted_bars - 1; i++) {
+      ExtLineBuffer[i]=(iMAOnArray(PriceExtLineBuffer, 0, MathRound(MAPeriodBuffer[i]), 0, MAType, i)*(PriceHExtLineBuffer[i] - PriceLExtLineBuffer[i])/100)+PriceLExtLineBuffer[i];
+      if (CutShort > 0 && i > InpPricePeriod * CutShort) break;
+   }
     
    return;
   }
